@@ -5,7 +5,6 @@ import requests
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-   
     required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"]  
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
@@ -27,14 +26,41 @@ def get_review(model_name, review_prompt, code):
     try:
         # Instantiate the GenerativeModel
         model = genai.GenerativeModel(model_name=model_name)
-        
+
         # Generate content using the prompt and code
         response = model.generate_content(
-            [review_prompt + "\n\n" + code] 
+            [review_prompt + "\n\n" + code]
         )
-        
+
         review_result = response.text  # Extract AI's response text
+
+        # Extract vulnerability counts and status (pass/fail)
+        # (This will depend on the format of your Gemini output)
+        # Example:
+        high_count = review_result.count("High severity")
+        medium_count = review_result.count("Medium severity")
+        low_count = review_result.count("Low severity")
+        
+        if high_count > 0:
+            status = "❌ Fail"  # Failed if any high severity vulnerabilities
+        else:
+            status = "✅ Pass"
+
+        # Add vulnerability counts, emojis, and status to the review
+        review_result = f"""
+## Gemini Security Scan Results: {status}
+
+* **High severity:** {high_count} 🚨
+* **Medium severity:** {medium_count} ⚠️
+* **Low severity:** {low_count} ℹ️
+
+---
+
+{review_result} 
+        """
+
         return review_result
+
     except Exception as e:
         print(f"Error generating review from Generative AI: {e}")
         return "Error generating review from AI"
