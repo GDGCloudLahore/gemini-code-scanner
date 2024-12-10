@@ -1,78 +1,60 @@
 import os
+import json
 import google.generativeai as genai
-from github import Github
+import requests
+from loguru import logger
 
+def check_required_env_vars():
+    """Check required environment variables"""
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_PULL_REQUEST_NUMBER", "GIT_COMMIT_HASH"]
+    for env_var in required_env_vars:
+        if not os.getenv(env_var):
+            raise ValueError(f"{env_var} is not set")
+
+def get_review(model, diff, review_prompt):
+    """Get a review from the AI model"""
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+    genai_model = genai.start_chat(
+        model=model,
+        history=[{"role": "user", "content": review_prompt}]
+    )
+
+    convo_response = genai_model.send_message(diff)
+    review_result = convo_response.text
+    logger.debug(f"Response from AI: {review_result}")
+    return review_result
+
+def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body):
+    """Create a comment on a pull request"""
+    url = f"https://api.github.com/repos/{github_repository}/issues/{pull_request_number}/comments"
+    headers = {"Authorization": f"Bearer {github_token}"}
+    data = {"body": body}
+    response = requests.post(url, headers=headers, json=data)
+    logger.debug(f"Comment Response: {response.status_code} - {response.text}")
+    return response
 
 def main():
-    # Get inputs from environment
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
-    github_token = os.environ.get("MY_GITHUB_TOKEN")
-    repo_name = os.environ.get("REPO_NAME")
-    branch_name = os.environ.get("BRANCH_NAME")
+    check_required_env_vars()
+    api_key = os.getenv("GEMINI_API_KEY")
+    github_token = os.getenv("GITHUB_TOKEN")
+    repo = os.getenv("GITHUB_REPOSITORY")
+    pr_number = int(os.getenv("GITHUB_PULL_REQUEST_NUMBER"))
 
-    # Check if all required environment variables are present
-    if not gemini_api_key:
-        raise ValueError("The environment variable 'GEMINI_API_KEY' is missing.")
-    if not github_token:
-        raise ValueError("The environment variable 'MY_GITHUB_TOKEN' is missing.")
-    if not repo_name:
-        raise ValueError("The environment variable 'REPO_NAME' is missing.")
-    if not branch_name:
-        raise ValueError("The environment variable 'BRANCH_NAME' is missing.")
+    genai.configure(api_key=api_key)
 
-    print(f"GitHub Token (First 5 chars): {github_token[:5]}")  # Mask the token for security
-    print(f"Repo Name: {repo_name}")
-    print(f"Branch Name: {branch_name}")
+    review_prompt = "Please review the following pull request changes and provide suggestions for improvement."
+    diff = "Example code changes for the pull request"
+    review = get_review(model="gpt-3.5-turbo", diff=diff, review_prompt=review_prompt)
 
-    # Authenticate with Gemini
-    genai.configure(api_key=gemini_api_key)
-    gemini_client = genai.GenerativeModel()
+    logger.debug(f"Review result: {review}")
 
-    # Authenticate with GitHub
-    try:
-        print(f"Attempting to access repository: {repo_name}")
-        gh = Github(github_token)
-        repo = gh.get_repo(repo_name)
-    except Exception as e:
-        print(f"Error accessing the repo {repo_name}: {e}")
-        raise
-
-    # Get the pull request associated with the branch
-    try:
-        pr = repo.get_pulls(state='open', head=f"{repo_name.split('/')[0]}:{branch_name}")[0]
-    except Exception as e:
-        print(f"Error fetching the pull request for branch {branch_name}: {e}")
-        raise
-
-    # Get the code changes from the pull request
-    code_diff = ""
-    try:
-        files = pr.get_files()
-        for file in files:
-            code_diff += f"```diff\n--- a/{file.filename}\n+++ b/{file.filename}\n{file.patch}\n```\n"
-    except Exception as e:
-        print(f"Error getting code changes for PR: {e}")
-        raise
-
-    # Analyze the code with Gemini
-    try:
-        response = gemini_client.generate_text(
-            prompt=f"Analyze this code and provide feedback:\n\n{code_diff}",
-            model="gemini-pro",
-            temperature=0.1,
-            max_output_tokens=500
-        )
-        analysis = response.text
-    except Exception as e:
-        print(f"Error analyzing the code with Gemini: {e}")
-        raise
-
-    # Post the analysis as a comment on the pull request
-    try:
-        pr.create_issue_comment(f"**Gemini Code Analysis:**\n\n{analysis}")
-    except Exception as e:
-        print(f"Error creating comment on the PR: {e}")
-        raise
+    create_a_comment_to_pull_request(
+        github_token=github_token,
+        github_repository=repo,
+        pull_request_number=pr_number,
+        body=review
+    )
 
 if __name__ == "__main__":
     main()
