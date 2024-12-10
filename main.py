@@ -2,6 +2,7 @@ import os
 import google.generativeai as genai
 from github import Github
 
+
 def main():
     # Get inputs
     gemini_api_key = os.environ.get("INPUT_GEMINI_API_KEY")
