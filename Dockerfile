@@ -1,7 +1,7 @@
-FROM python:3.9
+FROM python:3.10
 
 # Install dependencies
-RUN pip install google-generativeai PyGithub loguru requests
+RUN pip install google-generativeai==0.4.0 PyGithub loguru requests
 
 # Copy the action code
 COPY main.py .
