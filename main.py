@@ -21,17 +21,17 @@ def configure_genai():
         raise ValueError(f"Failed to configure Generative AI: {e}")
 
 
-def get_review(model, review_prompt, code):
+def get_review(model_name, review_prompt, code):
     """Get a review from the AI model"""
     configure_genai()
     try:
-        response = genai.generate_content(
-            prompt=review_prompt + "\n\n" + code,  # Combine the prompt and code
-            model=model,  # Use "text-bison-001" or a valid AI model
-            temperature=0.1,
-            max_output_tokens=1000  # Token limit
-        )
-        review_result = response['candidates'][0]['content']  # Extract AI's response text
+        # Instantiate the GenerativeModel
+        model = genai.GenerativeModel(model_name=model_name)
+        
+        # Generate content using the prompt and code
+        response = model.generate_content(prompt=review_prompt + "\n\n" + code)
+        
+        review_result = response.text  # Extract AI's response text
         return review_result
     except Exception as e:
         print(f"Error generating review from Generative AI: {e}")
@@ -114,7 +114,7 @@ def main():
         # Step 6: Review the code using Generative AI
         review_prompt = "Please review the following pull request changes and provide suggestions for improvement."
         try:
-            review = get_review(model="text-bison-001", review_prompt=review_prompt, code=code)
+            review = get_review(model_name="gemini-pro", review_prompt=review_prompt, code=code)
         except Exception as e:
             print(f"Error getting review from Generative AI: {e}")
             review = "Failed to get AI review."
