@@ -6,7 +6,7 @@ from loguru import logger
 
 def check_required_env_vars():
     """Check required environment variables"""
-    required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_PULL_REQUEST_NUMBER"]  # Changed GITHUB_TOKEN to MY_GITHUB_TOKEN
+    required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"] 
     for env_var in required_env_vars:
         if not os.getenv(env_var):
             raise ValueError(f"{env_var} is not set")
@@ -37,10 +37,8 @@ def create_a_comment_to_pull_request(github_token, github_repository, pull_reque
 def main():
     check_required_env_vars()
     api_key = os.getenv("GEMINI_API_KEY")
-    # Get the GitHub token using the new secret name
     github_token = os.getenv("MY_GITHUB_TOKEN")  
     repo = os.getenv("GITHUB_REPOSITORY")
-    pr_number = int(os.getenv("GITHUB_PULL_REQUEST_NUMBER"))
 
     genai.configure(api_key=api_key)
 
@@ -51,12 +49,8 @@ def main():
 
     logger.debug(f"Review result: {review}")
 
-    create_a_comment_to_pull_request(
-        github_token=github_token,
-        github_repository=repo,
-        pull_request_number=pr_number,
-        body=review
-    )
+    # You'll need to add code here to get the pull request number
+    # and then call create_a_comment_to_pull_request()
 
 if __name__ == "__main__":
     main()
