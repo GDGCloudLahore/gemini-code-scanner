@@ -49,7 +49,7 @@ def main():
     files = pr.get_files()
     code = ""
     for file in files:
-        code += f"```{file.filename}\n{file.raw_data['content'].decode('utf-8')}\n```\n"  # Decode the content
+        code += f"```{file.filename}\n{file.content}\n```\n" 
 
     review_prompt = "Please review the following pull request changes and provide suggestions for improvement."
     
