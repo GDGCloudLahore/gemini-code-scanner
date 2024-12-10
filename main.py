@@ -5,7 +5,7 @@ import requests
 
 
 def check_required_env_vars():
-    """Check if required environment variables are set"""
+    """Check if required environment variables are set."""
     required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"] 
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
@@ -13,7 +13,7 @@ def check_required_env_vars():
 
 
 def configure_genai():
-    """Configure Google Generative AI API"""
+    """Configure Google Generative AI API."""
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         genai.configure(api_key=api_key)
@@ -22,14 +22,20 @@ def configure_genai():
 
 
 def get_review(model_name, review_prompt, code):
-    """Get a review from the AI model"""
+    """Get a review from the AI model."""
     configure_genai()
     try:
         # Instantiate the GenerativeModel
         model = genai.GenerativeModel(model_name=model_name)
         
         # Generate content using the prompt and code
-        response = model.generate_content(prompt=review_prompt + "\n\n" + code)
+        # Correct way to pass the prompt to generate_content
+        response = model.generate_content([
+          genai.Content(
+              text=review_prompt + "\n\n" + code,
+              role="user",
+              )
+        ])
         
         review_result = response.text  # Extract AI's response text
         return review_result
@@ -39,7 +45,7 @@ def get_review(model_name, review_prompt, code):
 
 
 def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body):
-    """Create a comment on a pull request"""
+    """Create a comment on a pull request."""
     try:
         url = f"https://api.github.com/repos/{github_repository}/issues/{pull_request_number}/comments"
         headers = {"Authorization": f"Bearer {github_token}"}
@@ -56,7 +62,7 @@ def create_a_comment_to_pull_request(github_token, github_repository, pull_reque
 
 
 def get_pull_request(gh, repo_name):
-    """Get the most recent open pull request"""
+    """Get the most recent open pull request."""
     try:
         repo = gh.get_repo(repo_name)
         pulls = repo.get_pulls(state='open', sort='created', direction='desc')
@@ -71,7 +77,7 @@ def get_pull_request(gh, repo_name):
 
 
 def get_code_from_pull_request(repo, pr):
-    """Get the code content from all files in the pull request"""
+    """Get the code content from all files in the pull request."""
     code = ""
     try:
         files = pr.get_files()
@@ -88,7 +94,7 @@ def get_code_from_pull_request(repo, pr):
 
 
 def main():
-    """Main function to handle the workflow"""
+    """Main function to handle the workflow."""
     try:
         # Step 1: Check for environment variables
         check_required_env_vars()
