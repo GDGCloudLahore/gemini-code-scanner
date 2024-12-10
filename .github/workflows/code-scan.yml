@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Gemini Code Scanner
-        uses: ./.github/actions/gemini-code-scanner
+        uses: ./
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           github_token: ${{ secrets.MY_GITHUB_TOKEN }}  
