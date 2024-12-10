@@ -3,7 +3,6 @@ import google.generativeai as genai
 from github import Github
 import requests
 
-
 def check_required_env_vars():
     """Check if required environment variables are set."""
     required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"] 
@@ -29,13 +28,9 @@ def get_review(model_name, review_prompt, code):
         model = genai.GenerativeModel(model_name=model_name)
         
         # Generate content using the prompt and code
-        # Correct way to pass the prompt to generate_content
-        response = model.generate_content([
-          genai.Content(
-              text=review_prompt + "\n\n" + code,
-              role="user",
-              )
-        ])
+        response = model.generate_content(
+            [review_prompt + "\n\n" + code] 
+        )
         
         review_result = response.text  # Extract AI's response text
         return review_result
