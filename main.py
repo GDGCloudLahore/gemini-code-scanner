@@ -14,16 +14,19 @@ def get_review(model, review_prompt, code):
     """Get a review from the AI model"""
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-    # Start a chat session
-    chat = genai.start_chat(
-        model=model,  # Use the model name like "gpt-3.5-turbo" or "text-bison-001"
-        history=[{"role": "user", "content": review_prompt}]  # Initial context for the chat
-    )
-
-    # Send the code changes as part of the chat
-    response = chat.send_message(code)
-    review_result = response.text  # Extract AI's response text
-    return review_result
+ 
+    try:
+        response = genai.generate_text(
+            prompt=review_prompt + "\n\n" + code,  # Combine the prompt and code
+            model=model,  # Use "text-bison-001" or a valid AI model
+            temperature=0.1,
+            max_output_tokens=1000  # Token limit
+        )
+        review_result = response.text  # Extract AI's response text
+        return review_result
+    except Exception as e:
+        print(f"Error generating review from Generative AI: {e}")
+        return "Error generating review from AI"
 
 def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body):
     """Create a comment on a pull request"""
@@ -63,7 +66,7 @@ def main():
     review_prompt = "Please review the following pull request changes and provide suggestions for improvement."
     
     try:
-        review = get_review(model="gpt-3.5-turbo", review_prompt=review_prompt, code=code)
+        review = get_review(model="text-bison-001", review_prompt=review_prompt, code=code)
     except Exception as e:
         print(f"Error getting review from Generative AI: {e}")
         review = "Failed to get AI review."
