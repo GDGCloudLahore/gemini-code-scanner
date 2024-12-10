@@ -113,7 +113,14 @@ def main():
             raise ValueError("No code changes were found in the pull request.")
 
         # Step 6: Review the code using Generative AI
-        review_prompt = "Please review the following pull request changes and provide suggestions for improvement."
+        review_prompt = """Please review the following pull request changes, \
+        identify any potential security vulnerabilities, and provide suggestions for improvement.
+        
+        Consider the following:
+        * OWASP Top 10 vulnerabilities (e.g., SQL injection, cross-site scripting)
+        * Secure coding practices for the programming languages used
+        * Any potential for data breaches or unauthorized access
+        """ 
         try:
             review = get_review(model_name="gemini-pro", review_prompt=review_prompt, code=code)
         except Exception as e:
@@ -125,7 +132,6 @@ def main():
 
     except Exception as e:
         print(f"Critical Error: {e}")
-
 
 if __name__ == "__main__":
     main()
