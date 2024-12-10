@@ -8,9 +8,9 @@ def main():
     gemini_api_key = os.environ.get("INPUT_GEMINI_API_KEY")
     # Get the GitHub token using the new secret name
     github_token = os.environ.get("INPUT_MY_GITHUB_TOKEN")  
-    repo_name = os.environ.get("GITHUB_REPOSITORY")
+    repo_name = os.environ.get("INPUT_REPO_NAME")
     # Get branch name from the environment
-    branch_name = os.environ.get("GITHUB_HEAD_REF") 
+    branch_name = os.environ.get("INPUT_BRANCH_NAME") 
 
     # Authenticate with Gemini
     genai.configure(api_key=gemini_api_key)
