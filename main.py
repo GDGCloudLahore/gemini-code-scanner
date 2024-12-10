@@ -25,13 +25,13 @@ def get_review(model, review_prompt, code):
     """Get a review from the AI model"""
     configure_genai()
     try:
-        response = genai.generate_text(
+        response = genai.generate_content(
             prompt=review_prompt + "\n\n" + code,  # Combine the prompt and code
             model=model,  # Use "text-bison-001" or a valid AI model
             temperature=0.1,
             max_output_tokens=1000  # Token limit
         )
-        review_result = response.text  # Extract AI's response text
+        review_result = response['candidates'][0]['content']  # Extract AI's response text
         return review_result
     except Exception as e:
         print(f"Error generating review from Generative AI: {e}")
