@@ -6,40 +6,66 @@ from github import Github
 def main():
     # Get inputs
     gemini_api_key = os.environ.get("INPUT_GEMINI_API_KEY")
-    # Get the GitHub token using the new secret name
     github_token = os.environ.get("INPUT_MY_GITHUB_TOKEN")  
-    repo_name = os.environ.get("INPUT_REPO_NAME")
-    # Get branch name from the environment
-    branch_name = os.environ.get("INPUT_BRANCH_NAME") 
+    repo_name = os.environ.get("INPUT_REPO_NAME") or os.environ.get("GITHUB_REPOSITORY")
+    branch_name = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
+
+    print(f"Repo Name: {repo_name}")
+    print(f"Branch Name: {branch_name}")
+    print(f"GitHub Token (First 5 chars): {github_token[:5]}")
+
+    if not gemini_api_key or not github_token or not repo_name or not branch_name:
+        raise ValueError("One or more required environment variables are missing.")
 
     # Authenticate with Gemini
     genai.configure(api_key=gemini_api_key)
     gemini_client = genai.GenerativeModel()
 
     # Authenticate with GitHub
-    gh = Github(github_token)
-    repo = gh.get_repo(repo_name)
+    try:
+        print(f"Attempting to access repository: {repo_name}")
+        gh = Github(github_token)
+        repo = gh.get_repo(repo_name)
+    except Exception as e:
+        print(f"Error accessing the repo {repo_name}: {e}")
+        raise
 
     # Get the pull request associated with the branch
-    pr = repo.get_pulls(state='open', head=branch_name)[0]
+    try:
+        pr = repo.get_pulls(state='open', head=f"{repo_name.split('/')[0]}:{branch_name}")[0]
+    except Exception as e:
+        print(f"Error fetching the pull request for branch {branch_name}: {e}")
+        raise
 
     # Get the code changes from the pull request
-    files = pr.get_files()
     code_diff = ""
-    for file in files:
-        code_diff += f"```diff\n--- a/{file.filename}\n+++ b/{file.filename}\n{file.patch}\n```\n"
+    try:
+        files = pr.get_files()
+        for file in files:
+            code_diff += f"```diff\n--- a/{file.filename}\n+++ b/{file.filename}\n{file.patch}\n```\n"
+    except Exception as e:
+        print(f"Error getting code changes for PR: {e}")
+        raise
 
     # Analyze the code with Gemini
-    response = gemini_client.generate_text(
-        prompt=f"Analyze this code and provide feedback:\n\n{code_diff}",
-        model="gemini-pro",
-        temperature=0.1,
-        max_output_tokens=500
-    )
-    analysis = response.text
+    try:
+        response = gemini_client.generate_text(
+            prompt=f"Analyze this code and provide feedback:\n\n{code_diff}",
+            model="gemini-pro",
+            temperature=0.1,
+            max_output_tokens=500
+        )
+        analysis = response.text
+    except Exception as e:
+        print(f"Error analyzing the code with Gemini: {e}")
+        raise
 
     # Post the analysis as a comment on the pull request
-    pr.create_issue_comment(f"**Gemini Code Analysis:**\n\n{analysis}")
+    try:
+        pr.create_issue_comment(f"**Gemini Code Analysis:**\n\n{analysis}")
+    except Exception as e:
+        print(f"Error creating comment on the PR: {e}")
+        raise
 
 if __name__ == "__main__":
     main()
