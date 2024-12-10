@@ -6,7 +6,7 @@ from github import Github
 def main():
     # Get inputs
     gemini_api_key = os.environ.get("INPUT_GEMINI_API_KEY")
-    github_token = os.environ.get("INPUT_MY_GITHUB_TOKEN")  # Use MY_GITHUB_TOKEN instead of GITHUB_TOKEN
+    github_token = os.environ.get("INPUT_MY_GITHUB_TOKEN")  # Get the token from the env
     repo_name = os.environ.get("INPUT_REPO_NAME") or os.environ.get("GITHUB_REPOSITORY")
     branch_name = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
 
