@@ -5,7 +5,6 @@ import requests
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-   
     required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"]  
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
@@ -130,6 +129,14 @@ For each vulnerability found, please:
 * Clearly identify the vulnerability type.
 * Indicate the specific line(s) of code where the vulnerability exists.
 * Provide clear and concise recommendations for fixing the vulnerability.
+* Include a relevant internet link for reference.
+
+After the analysis, please provide a summary with the following:
+
+* Total number of vulnerabilities found.
+* Number of high, medium, and low severity vulnerabilities.
+* Overall status: "Pass" if no high severity vulnerabilities are found, "Fail" otherwise.
+* Emojis representing the severity levels (e.g., 🚨 for high, ⚠️ for medium, ℹ️ for low).
 
 Code:
 {code}
