@@ -6,14 +6,15 @@ from github import Github
 def main():
     # Get inputs
     gemini_api_key = os.environ.get("INPUT_GEMINI_API_KEY")
-    github_token = os.environ.get("GITHUB_TOKEN")  # Updated to use GITHUB_TOKEN
+    github_token = os.environ.get("INPUT_MY_GITHUB_TOKEN")  # Use MY_GITHUB_TOKEN instead of GITHUB_TOKEN
     repo_name = os.environ.get("INPUT_REPO_NAME") or os.environ.get("GITHUB_REPOSITORY")
     branch_name = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
 
+    # Check if all required environment variables are present
     if not gemini_api_key:
         raise ValueError("The environment variable 'INPUT_GEMINI_API_KEY' is missing.")
     if not github_token:
-        raise ValueError("The environment variable 'GITHUB_TOKEN' is missing.")
+        raise ValueError("The environment variable 'INPUT_MY_GITHUB_TOKEN' is missing.")
     if not repo_name:
         raise ValueError("The environment variable 'INPUT_REPO_NAME' or 'GITHUB_REPOSITORY' is missing.")
     if not branch_name:

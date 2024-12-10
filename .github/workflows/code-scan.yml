@@ -12,13 +12,16 @@ jobs:
       issues: write
 
     steps:
- 
+      # Step 1: Checkout the code
       - uses: actions/checkout@v3
 
+
+
+      # Step 4: Run the custom action
       - name: Gemini Code Scanner
         uses: ./
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}  
-          repo_name: ${{ github.repository }}  
-          branch_name: ${{ github.head_ref || github.ref_name }} 
+          github_token: ${{ secrets.MY_GITHUB_TOKEN }}  # Pass the token as MY_GITHUB_TOKEN
+          repo_name: ${{ github.repository }}  # Dynamically fetch the repo name
+          branch_name: ${{ github.head_ref || github.ref_name }}  # Correct branch name logic
