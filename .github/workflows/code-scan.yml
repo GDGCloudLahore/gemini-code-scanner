@@ -1,0 +1,16 @@
+name: Code Scan
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Gemini Code Scanner
+        uses: ./.github/actions/gemini-code-scanner
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

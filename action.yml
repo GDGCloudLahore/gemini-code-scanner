@@ -1,0 +1,10 @@
+name: 'Gemini Code Scanner'
+author: 'Adil'
+description: 'Scan code with Google Gemini and comment on pull requests'
+inputs:
+  gemini_api_key:
+    description: 'API key for Google Gemini'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
