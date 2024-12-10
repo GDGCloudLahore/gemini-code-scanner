@@ -128,9 +128,14 @@ For each vulnerability found, please:
 
 * Clearly identify the vulnerability type.
 * Indicate the specific line(s) of code where the vulnerability exists.
-* **Mention the filename where the vulnerability is located.** 
+* Mention the filename where the vulnerability is located. 
 * Provide clear and concise recommendations for fixing the vulnerability.
 * Include a relevant internet link for reference.
+
+**Please present the vulnerabilities in a Markdown table with the following columns:**
+
+| Vulnerability Type | File | Line(s) | Description | Recommendation | Reference |
+|---|---|---|---|---|---|
 
 After the analysis, please provide a summary with the following:
 
