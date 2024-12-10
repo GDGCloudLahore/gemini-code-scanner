@@ -15,13 +15,15 @@ def get_review(model, diff, review_prompt):
     """Get a review from the AI model"""
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-    response = genai.generate_text(
+    gemini_client = genai.GenerativeModel()  # Create a Gemini client
+
+    response = gemini_client.generate_text(  # Use gemini_client.generate_text()
         model=model,
         prompt=review_prompt + "\n\n" + diff,
         temperature=0.1,
         max_output_tokens=500
     )
-    review_result = response.text
+    review_result = response.result  # Access the result
     logger.debug(f"Response from AI: {review_result}")
     return review_result
 
@@ -49,8 +51,7 @@ def main():
 
     logger.debug(f"Review result: {review}")
 
-    # You'll need to add code here to get the pull request number
-    # and then call create_a_comment_to_pull_request()
+   
 
 if __name__ == "__main__":
     main()
