@@ -9,19 +9,25 @@ def check_required_env_vars():
         if not os.getenv(env_var):
             raise ValueError(f"{env_var} is not set")
 
-def get_review(model, review_prompt, code):  # Updated function signature
+def get_review(model, review_prompt, code):
     """Get a review from the AI model"""
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
     gemini_client = genai.GenerativeModel(model=model)
 
     response = gemini_client.generate_content(  
-        prompt=review_prompt + "\n\n" + code,  # Use code directly in the prompt
+        prompt=review_prompt + "\n\n" + code,
     )
     review_result = response.text
     return review_result
 
-# ... (create_a_comment_to_pull_request function remains the same)
+def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body):
+    """Create a comment on a pull request"""
+    url = f"https://api.github.com/repos/{github_repository}/issues/{pull_request_number}/comments"
+    headers = {"Authorization": f"Bearer {github_token}"}
+    data = {"body": body}
+    response = requests.post(url, headers=headers, json=data)
+    return response
 
 def main():
     check_required_env_vars()
@@ -43,13 +49,15 @@ def main():
     files = pr.get_files()
     code = ""
     for file in files:
-        code += f"```{file.filename}\n{file.contents}\n```\n"
+        code += f"```{file.filename}\n{file.raw_data['content'].decode('utf-8')}\n```\n"  # Decode the content
 
     review_prompt = "Please review the following pull request changes and provide suggestions for improvement."
     
-    review = get_review(model="gemini-1.5-pro", review_prompt=review_prompt, code=code)  # Pass the code
+    review = get_review(model="gemini-1.5-pro", review_prompt=review_prompt, code=code)
 
-    # ... (Call create_a_comment_to_pull_request if needed)
+    # Call create_a_comment_to_pull_request if needed, 
+    # making sure to pass the pull request number
+    # create_a_comment_to_pull_request(github_token, repo_name, pr.number, review) 
 
 if __name__ == "__main__":
     main()
