@@ -1,8 +1,6 @@
 import os
-import json
 import google.generativeai as genai
-import requests
-from loguru import logger
+from github import Github
 
 def check_required_env_vars():
     """Check required environment variables"""
@@ -11,47 +9,47 @@ def check_required_env_vars():
         if not os.getenv(env_var):
             raise ValueError(f"{env_var} is not set")
 
-def get_review(model, diff, review_prompt):
+def get_review(model, review_prompt, code):  # Updated function signature
     """Get a review from the AI model"""
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-    gemini_client = genai.GenerativeModel()  # Create a Gemini client
+    gemini_client = genai.GenerativeModel(model=model)
 
-    response = gemini_client.generate_text(  # Use gemini_client.generate_text()
-        model=model,
-        prompt=review_prompt + "\n\n" + diff,
-        temperature=0.1,
-        max_output_tokens=500
+    response = gemini_client.generate_content(  
+        prompt=review_prompt + "\n\n" + code,  # Use code directly in the prompt
     )
-    review_result = response.result  # Access the result
-    logger.debug(f"Response from AI: {review_result}")
+    review_result = response.text
     return review_result
 
-def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body):
-    """Create a comment on a pull request"""
-    url = f"https://api.github.com/repos/{github_repository}/issues/{pull_request_number}/comments"
-    headers = {"Authorization": f"Bearer {github_token}"}
-    data = {"body": body}
-    response = requests.post(url, headers=headers, json=data)
-    logger.debug(f"Comment Response: {response.status_code} - {response.text}")
-    return response
+# ... (create_a_comment_to_pull_request function remains the same)
 
 def main():
     check_required_env_vars()
     api_key = os.getenv("GEMINI_API_KEY")
     github_token = os.getenv("MY_GITHUB_TOKEN")  
-    repo = os.getenv("GITHUB_REPOSITORY")
+    repo_name = os.getenv("GITHUB_REPOSITORY")
 
     genai.configure(api_key=api_key)
 
+    gh = Github(github_token)
+    repo = gh.get_repo(repo_name)
+
+    # Get the pull request (you'll need to determine how to get the correct PR)
+    # For example, get the latest open PR:
+    pulls = repo.get_pulls(state='open', sort='created', direction='desc')
+    pr = pulls[0] 
+
+    # Get the code from the pull request files
+    files = pr.get_files()
+    code = ""
+    for file in files:
+        code += f"```{file.filename}\n{file.contents}\n```\n"
+
     review_prompt = "Please review the following pull request changes and provide suggestions for improvement."
-    diff = "Example code changes for the pull request"  # Replace with actual diff
     
-    review = get_review(model="gemini-1.5-pro", diff=diff, review_prompt=review_prompt)
+    review = get_review(model="gemini-1.5-pro", review_prompt=review_prompt, code=code)  # Pass the code
 
-    logger.debug(f"Review result: {review}")
-
-   
+    # ... (Call create_a_comment_to_pull_request if needed)
 
 if __name__ == "__main__":
     main()
