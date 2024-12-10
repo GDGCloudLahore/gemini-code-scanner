@@ -5,8 +5,8 @@ import requests
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    # Reverted back to GITHUB_TOKEN
-    required_env_vars = ["GEMINI_API_KEY", "GITHUB_TOKEN", "GITHUB_REPOSITORY"]  
+   
+    required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"]  
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -96,7 +96,7 @@ def main():
         check_required_env_vars()
 
         # Step 2: Get tokens and repository name from environment
-        github_token = os.getenv("GITHUB_TOKEN")   # Use GITHUB_TOKEN
+        github_token = os.getenv("MY_GITHUB_TOKEN")   
         repo_name = os.getenv("GITHUB_REPOSITORY")
 
         # Step 3: Authenticate with GitHub
