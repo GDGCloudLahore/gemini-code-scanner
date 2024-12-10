@@ -21,4 +21,7 @@ jobs:
         uses: ./
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        with:  
+          github_token: ${{ secrets.GITHUB_TOKEN }} 
+
     
