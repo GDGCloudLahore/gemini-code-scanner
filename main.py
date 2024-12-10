@@ -128,6 +128,7 @@ For each vulnerability found, please:
 
 * Clearly identify the vulnerability type.
 * Indicate the specific line(s) of code where the vulnerability exists.
+* **Mention the filename where the vulnerability is located.** 
 * Provide clear and concise recommendations for fixing the vulnerability.
 * Include a relevant internet link for reference.
 
