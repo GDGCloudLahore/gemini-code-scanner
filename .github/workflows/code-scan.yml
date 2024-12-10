@@ -15,15 +15,7 @@ jobs:
       # Step 1: Checkout the code
       - uses: actions/checkout@v3
 
-      # Step 2: Debug Environment
-      - name: Debug Environment
-        run: env | grep INPUT_
 
-      # Step 3: Debug Info
-      - name: Debug Info
-        run: |
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch Name: ${{ github.head_ref || github.ref_name }}"
 
       # Step 4: Run the custom action
       - name: Gemini Code Scanner
