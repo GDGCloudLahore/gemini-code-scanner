@@ -5,7 +5,8 @@ import requests
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"] 
+    # Reverted back to GITHUB_TOKEN
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_TOKEN", "GITHUB_REPOSITORY"]  
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -95,7 +96,7 @@ def main():
         check_required_env_vars()
 
         # Step 2: Get tokens and repository name from environment
-        github_token = os.getenv("MY_GITHUB_TOKEN")  
+        github_token = os.getenv("GITHUB_TOKEN")   # Use GITHUB_TOKEN
         repo_name = os.getenv("GITHUB_REPOSITORY")
 
         # Step 3: Authenticate with GitHub
@@ -113,14 +114,26 @@ def main():
             raise ValueError("No code changes were found in the pull request.")
 
         # Step 6: Review the code using Generative AI
-        review_prompt = """Please review the following pull request changes, \
-        identify any potential security vulnerabilities, and provide suggestions for improvement.
-        
-        Consider the following:
-        * OWASP Top 10 vulnerabilities (e.g., SQL injection, cross-site scripting)
-        * Secure coding practices for the programming languages used
-        * Any potential for data breaches or unauthorized access
-        """ 
+        review_prompt = f"""
+Please meticulously analyze the following code changes for potential security vulnerabilities line by line, and provide specific and actionable suggestions for improvement.
+
+Specifically, look for:
+
+* **Hardcoded secrets:** API keys, passwords, or other sensitive information embedded directly in the code.
+* **Code injection vulnerabilities:**  SQL injection, command injection, cross-site scripting (XSS), etc.
+* **Insecure data handling:**  Unencrypted storage of sensitive data, improper input validation, etc.
+* **Authentication and authorization issues:** Weak password policies, missing or inadequate access controls.
+* **Other common vulnerabilities:**  Outdated dependencies, insecure configurations, etc.
+
+For each vulnerability found, please:
+
+* Clearly identify the vulnerability type.
+* Indicate the specific line(s) of code where the vulnerability exists.
+* Provide clear and concise recommendations for fixing the vulnerability.
+
+Code:
+{code}
+"""
         try:
             review = get_review(model_name="gemini-pro", review_prompt=review_prompt, code=code)
         except Exception as e:
