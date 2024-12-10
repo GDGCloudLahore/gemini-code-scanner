@@ -4,21 +4,21 @@ from github import Github
 
 
 def main():
-    # Get inputs
-    gemini_api_key = os.environ.get("INPUT_GEMINI_API_KEY")
-    github_token = os.environ.get("INPUT_MY_GITHUB_TOKEN")  # Get the token from the env
-    repo_name = os.environ.get("INPUT_REPO_NAME") or os.environ.get("GITHUB_REPOSITORY")
-    branch_name = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
+    # Get inputs from environment
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    github_token = os.environ.get("MY_GITHUB_TOKEN")
+    repo_name = os.environ.get("REPO_NAME")
+    branch_name = os.environ.get("BRANCH_NAME")
 
     # Check if all required environment variables are present
     if not gemini_api_key:
-        raise ValueError("The environment variable 'INPUT_GEMINI_API_KEY' is missing.")
+        raise ValueError("The environment variable 'GEMINI_API_KEY' is missing.")
     if not github_token:
-        raise ValueError("The environment variable 'INPUT_MY_GITHUB_TOKEN' is missing.")
+        raise ValueError("The environment variable 'MY_GITHUB_TOKEN' is missing.")
     if not repo_name:
-        raise ValueError("The environment variable 'INPUT_REPO_NAME' or 'GITHUB_REPOSITORY' is missing.")
+        raise ValueError("The environment variable 'REPO_NAME' is missing.")
     if not branch_name:
-        raise ValueError("The environment variable 'GITHUB_HEAD_REF' or 'GITHUB_REF_NAME' is missing.")
+        raise ValueError("The environment variable 'BRANCH_NAME' is missing.")
 
     print(f"GitHub Token (First 5 chars): {github_token[:5]}")  # Mask the token for security
     print(f"Repo Name: {repo_name}")
