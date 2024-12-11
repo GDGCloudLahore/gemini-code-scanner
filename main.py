@@ -131,7 +131,7 @@ For each vulnerability found, please:
 * Mention the filename where the vulnerability is located. 
 * Provide clear and concise recommendations for fixing the vulnerability.
 * Include a relevant internet link for reference.
-* Include a code improvement recommendation that you think this code can be well written with this recommendation with file name and line number also add the code sample for help.
+* Include a code improvement recommendation that you think this code can be well written with this recommendation with file name and line number and also add if you have any internet reference for this
 
 **Please present the vulnerabilities in a Markdown table with the following columns:**
 
