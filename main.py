@@ -9,7 +9,7 @@ logger.add("gemini_code_scan.log", rotation="10 MB", level="DEBUG")
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"]  
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"] 
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -36,6 +36,23 @@ def get_review(model_name, review_prompt, code):
     except Exception as e:
         logger.exception(f"Error generating review from Generative AI: {e}")
         return "Error generating review from AI"
+
+def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body): # Re-added this function
+    """Create a comment on a pull request."""
+    try:
+        url = f"https://api.github.com/repos/{github_repository}/issues/{pull_request_number}/comments"
+        headers = {"Authorization": f"Bearer {github_token}"}
+        data = {"body": body}
+        logger.debug(f"Posting review to GitHub PR #{pull_request_number}...")
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code != 201:
+            logger.error(f"Failed to create a comment on the PR. Status: {response.status_code}, Response: {response.text}")
+        else:
+            logger.debug("Review posted successfully to GitHub PR.")
+        return response
+    except Exception as e:
+        logger.exception(f"Error creating a comment on the PR: {e}")
+        return None
 
 def get_pull_request(gh, repo_name):
     """Get the most recent open pull request."""
@@ -72,7 +89,7 @@ def main():
     try:
         check_required_env_vars()
 
-        
+      
         github_token = os.getenv("GITHUB_TOKEN") 
         repo_name = os.getenv("GITHUB_REPOSITORY")
 
@@ -123,14 +140,12 @@ Code:
 """
         try:
             review = get_review(model_name="gemini-1.5-pro", review_prompt=review_prompt, code=code)
-
-            # Set the output variable for the comment action
-            print(f"::set-output name=review::{review}") 
-
         except Exception as e:
             print(f"Error getting review from Generative AI: {e}")
-            # Set an error message as the output variable
-            print(f"::set-output name=review::Failed to get AI review: {e}")  
+            review = "Failed to get AI review."
+
+        # Use GITHUB_TOKEN for creating comments
+        create_a_comment_to_pull_request(os.getenv("GITHUB_TOKEN"), repo_name, pr.number, review)
 
     except Exception as e:
         logger.exception(f"Critical Error: {e}")
