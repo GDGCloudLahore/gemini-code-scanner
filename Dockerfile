@@ -1,5 +1,7 @@
 FROM python:3.10
 
+WORKDIR /app
+
 # Install dependencies
 RUN pip install google-generativeai==0.4.0 PyGithub loguru requests
 
@@ -7,4 +9,4 @@ RUN pip install google-generativeai==0.4.0 PyGithub loguru requests
 COPY main.py .
 
 # Set the entry point
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "/app/main.py"]
