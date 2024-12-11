@@ -4,12 +4,11 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+permissions: write-all
 jobs:
   scan:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
+
 
     steps:
       - uses: actions/checkout@v3
@@ -17,6 +16,6 @@ jobs:
       - name: Gemini Code Scanner
         uses: ./
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}  
+     
