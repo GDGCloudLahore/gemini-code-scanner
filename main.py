@@ -89,7 +89,7 @@ def main():
     """Main function to handle the workflow."""
     try:
         check_required_env_vars()
-        github_token = os.getenv("MY_GITHUB_TOKEN")   
+        github_token = os.getenv("GITHUB_TOKEN") or os.getenv("MY_GITHUB_TOKEN")     
         repo_name = os.getenv("GITHUB_REPOSITORY")
         gh = Github(github_token)
         pr = get_pull_request(gh, repo_name)
