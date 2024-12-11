@@ -9,7 +9,7 @@ logger.add("gemini_code_scan.log", rotation="10 MB", level="DEBUG")
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"]  # Removed MY_GITHUB_TOKEN
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"] 
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
