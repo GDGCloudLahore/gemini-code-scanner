@@ -139,8 +139,7 @@ Code:
             print(f"Error getting review from Generative AI: {e}")
             review = "Failed to get AI review."
 
-        # Use GITHUB_TOKEN for creating comments
-        create_a_comment_to_pull_request(os.getenv("GITHUB_TOKEN"), repo_name, pr.number, review)  
+        create_a_comment_to_pull_request(os.getenv("MY_GITHUB_TOKEN"), repo_name, pr.number, review)  
 
     except Exception as e:
         logger.exception(f"Critical Error: {e}")  # Log critical errors
