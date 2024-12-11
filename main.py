@@ -9,7 +9,7 @@ logger.add("gemini_code_scan.log", rotation="10 MB", level="DEBUG")
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"]  
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"] 
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -37,7 +37,7 @@ def get_review(model_name, review_prompt, code):
         logger.exception(f"Error generating review from Generative AI: {e}")
         return "Error generating review from AI"
 
-def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body):
+def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body): # Re-added this function
     """Create a comment on a pull request."""
     try:
         url = f"https://api.github.com/repos/{github_repository}/issues/{pull_request_number}/comments"
@@ -72,8 +72,7 @@ def get_code_from_pull_request(repo, pr):
     code = ""
     try:
         files = pr.get_files()
-        # Iterate through the PaginatedList without using len()
-        logger.debug("Retrieving code from files in the pull request...")  
+        logger.debug("Retrieving code from files in the pull request...")
         for file in files:
             try:
                 file_content = repo.get_contents(file.filename, ref=pr.head.sha)
@@ -89,15 +88,21 @@ def main():
     """Main function to handle the workflow."""
     try:
         check_required_env_vars()
-        github_token = os.getenv("MY_GITHUB_TOKEN")   
+
+      
+        github_token = os.getenv("GITHUB_TOKEN") 
         repo_name = os.getenv("GITHUB_REPOSITORY")
+
         gh = Github(github_token)
         pr = get_pull_request(gh, repo_name)
         print(f"Processing Pull Request: #{pr.number} - {pr.title}")
+
         repo = gh.get_repo(repo_name)
         code = get_code_from_pull_request(repo, pr)
+
         if not code:
             raise ValueError("No code changes were found in the pull request.")
+
         review_prompt = f"""
 Please meticulously analyze the following code changes for potential security vulnerabilities line by line, and provide specific and actionable suggestions for improvement.
 
@@ -139,10 +144,11 @@ Code:
             print(f"Error getting review from Generative AI: {e}")
             review = "Failed to get AI review."
 
-        create_a_comment_to_pull_request(os.getenv("MY_GITHUB_TOKEN"), repo_name, pr.number, review)  
+        # Use GITHUB_TOKEN for creating comments
+        create_a_comment_to_pull_request(os.getenv("GITHUB_TOKEN"), repo_name, pr.number, review)
 
     except Exception as e:
-        logger.exception(f"Critical Error: {e}")  # Log critical errors
+        logger.exception(f"Critical Error: {e}")
 
 if __name__ == "__main__":
     main()
