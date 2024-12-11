@@ -149,7 +149,7 @@ Code:
 {code}
 """
         try:
-            review = get_review(model_name="gemini-pro", review_prompt=review_prompt, code=code)
+            review = get_review(model_name="gemini-1.5-pro", review_prompt=review_prompt, code=code)
         except Exception as e:
             print(f"Error getting review from Generative AI: {e}")
             review = "Failed to get AI review."
