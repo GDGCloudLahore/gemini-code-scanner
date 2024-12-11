@@ -72,7 +72,8 @@ def get_code_from_pull_request(repo, pr):
     code = ""
     try:
         files = pr.get_files()
-        logger.debug(f"Retrieving code from {len(files)} files in the pull request...")
+        # Iterate through the PaginatedList without using len()
+        logger.debug("Retrieving code from files in the pull request...")  
         for file in files:
             try:
                 file_content = repo.get_contents(file.filename, ref=pr.head.sha)
