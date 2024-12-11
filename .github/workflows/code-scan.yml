@@ -12,15 +12,16 @@ jobs:
       issues: write
 
     steps:
-      # Step 1: Checkout the code
       - uses: actions/checkout@v3
- 
 
-      # Step 3: Run the custom action
       - name: Gemini Code Scanner
         uses: ./
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          REPO_NAME: ${{ github.repository }} 
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}  # Correct branch name logic
+          MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }} 
+
+      - name: Add comment to PR
+        uses: thollander/actions-comment-pull-request@v1  # Use the comment action
+        with:
+          message: ${{ steps.gemini-scanner.outputs.review }}  # Pass the review as the message
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
