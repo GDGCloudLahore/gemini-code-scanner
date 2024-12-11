@@ -22,5 +22,5 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          REPO_NAME: ${{ github.repository }}  # Dynamically fetch the repo name
+          REPO_NAME: ${{ github.repository }} 
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}  # Correct branch name logic

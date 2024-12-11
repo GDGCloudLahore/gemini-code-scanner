@@ -5,7 +5,7 @@ import requests
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"]  # Only these are truly required
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"]
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -90,6 +90,7 @@ def main():
         if not code:
             raise ValueError("No code changes were found in the pull request.")
 
+        # Step 6: Review the code using Generative AI
         review_prompt = f"""
 Please meticulously analyze the following code changes for potential security vulnerabilities line by line, and provide specific and actionable suggestions for improvement.
 
@@ -131,7 +132,7 @@ Code:
             print(f"Error getting review from Generative AI: {e}")
             review = "Failed to get AI review."
 
-        # Use GITHUB_TOKEN for comments
+        # Use GITHUB_TOKEN for creating comments
         create_a_comment_to_pull_request(os.getenv("GITHUB_TOKEN"), repo_name, pr.number, review)  
 
     except Exception as e:
