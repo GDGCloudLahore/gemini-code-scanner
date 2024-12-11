@@ -5,11 +5,10 @@ import requests
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    required_env_vars = ["GEMINI_API_KEY", "MY_GITHUB_TOKEN", "GITHUB_REPOSITORY"]  
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"]  # Only these are truly required
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
-
 
 def configure_genai():
     """Configure Google Generative AI API."""
@@ -19,25 +18,16 @@ def configure_genai():
     except Exception as e:
         raise ValueError(f"Failed to configure Generative AI: {e}")
 
-
 def get_review(model_name, review_prompt, code):
     """Get a review from the AI model."""
     configure_genai()
     try:
-        # Instantiate the GenerativeModel
         model = genai.GenerativeModel(model_name=model_name)
-        
-        # Generate content using the prompt and code
-        response = model.generate_content(
-            [review_prompt + "\n\n" + code] 
-        )
-        
-        review_result = response.text  # Extract AI's response text
-        return review_result
+        response = model.generate_content([review_prompt + "\n\n" + code])
+        return response.text
     except Exception as e:
         print(f"Error generating review from Generative AI: {e}")
         return "Error generating review from AI"
-
 
 def create_a_comment_to_pull_request(github_token, github_repository, pull_request_number, body):
     """Create a comment on a pull request."""
@@ -46,30 +36,24 @@ def create_a_comment_to_pull_request(github_token, github_repository, pull_reque
         headers = {"Authorization": f"Bearer {github_token}"}
         data = {"body": body}
         response = requests.post(url, headers=headers, json=data)
-        
         if response.status_code != 201:
             print(f"Failed to create a comment on the PR. Status: {response.status_code}, Response: {response.text}")
-        
         return response
     except Exception as e:
         print(f"Error creating a comment on the PR: {e}")
         return None
-
 
 def get_pull_request(gh, repo_name):
     """Get the most recent open pull request."""
     try:
         repo = gh.get_repo(repo_name)
         pulls = repo.get_pulls(state='open', sort='created', direction='desc')
-        
         if not pulls:
             raise ValueError("No open pull requests found.")
-        
-        return pulls[0]  # Get the latest open PR
+        return pulls[0]
     except Exception as e:
         print(f"Error getting pull request: {e}")
         raise
-
 
 def get_code_from_pull_request(repo, pr):
     """Get the code content from all files in the pull request."""
@@ -87,32 +71,25 @@ def get_code_from_pull_request(repo, pr):
         print(f"Error getting files from PR: {e}")
     return code
 
-
 def main():
     """Main function to handle the workflow."""
     try:
-        # Step 1: Check for environment variables
         check_required_env_vars()
 
-        # Step 2: Get tokens and repository name from environment
-        github_token = os.getenv("MY_GITHUB_TOKEN")   
+        # Prioritize GITHUB_TOKEN, use MY_GITHUB_TOKEN if necessary
+        github_token = os.getenv("GITHUB_TOKEN") or os.getenv("MY_GITHUB_TOKEN") 
         repo_name = os.getenv("GITHUB_REPOSITORY")
 
-        # Step 3: Authenticate with GitHub
         gh = Github(github_token)
-
-        # Step 4: Get the latest pull request
         pr = get_pull_request(gh, repo_name)
         print(f"Processing Pull Request: #{pr.number} - {pr.title}")
 
-        # Step 5: Get the code from the pull request files
         repo = gh.get_repo(repo_name)
         code = get_code_from_pull_request(repo, pr)
 
         if not code:
             raise ValueError("No code changes were found in the pull request.")
 
-        # Step 6: Review the code using Generative AI
         review_prompt = f"""
 Please meticulously analyze the following code changes for potential security vulnerabilities line by line, and provide specific and actionable suggestions for improvement.
 
@@ -133,7 +110,7 @@ For each vulnerability found, please:
 * Include a relevant internet link for reference.
 * Include a code improvement recommendation that you think this code can be well written with this recommendation with file name and line number 
 
-**Please present the vulnerabilities in a Markdown table with the following columns:**
+Please present the vulnerabilities in a Markdown table with the following columns:
 
 | Vulnerability Type | File | Line(s) | Description | Recommendation | Reference | Code Improvement|
 |---|---|---|---|---|---|---|
@@ -149,13 +126,13 @@ Code:
 {code}
 """
         try:
-            review = get_review(model_name="gemini-1.5-pro", review_prompt=review_prompt, code=code)
+            review = get_review(model_name="gemini-pro", review_prompt=review_prompt, code=code)
         except Exception as e:
             print(f"Error getting review from Generative AI: {e}")
             review = "Failed to get AI review."
 
-        # Step 7: Create a comment on the pull request with the review result
-        create_a_comment_to_pull_request(github_token, repo_name, pr.number, review)
+        # Use GITHUB_TOKEN for comments
+        create_a_comment_to_pull_request(os.getenv("GITHUB_TOKEN"), repo_name, pr.number, review)  
 
     except Exception as e:
         print(f"Critical Error: {e}")
