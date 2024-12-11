@@ -9,7 +9,7 @@ logger.add("gemini_code_scan.log", rotation="10 MB", level="DEBUG")
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
-    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"] 
+    required_env_vars = ["GEMINI_API_KEY", "GITHUB_REPOSITORY"]  
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -72,8 +72,8 @@ def main():
     try:
         check_required_env_vars()
 
-        # Use GITHUB_TOKEN for authentication
-        github_token = os.getenv("GITHUB_TOKEN")
+        
+        github_token = os.getenv("GITHUB_TOKEN") 
         repo_name = os.getenv("GITHUB_REPOSITORY")
 
         gh = Github(github_token)
@@ -87,9 +87,40 @@ def main():
             raise ValueError("No code changes were found in the pull request.")
 
         review_prompt = f"""
-(Your detailed review prompt here - same as before)
-"""
+Please meticulously analyze the following code changes for potential security vulnerabilities line by line, and provide specific and actionable suggestions for improvement.
 
+Specifically, look for:
+
+* **Hardcoded secrets:** API keys, passwords, or other sensitive information embedded directly in the code.
+* **Code injection vulnerabilities:**  SQL injection, command injection, cross-site scripting (XSS), etc.
+* **Insecure data handling:**  Unencrypted storage of sensitive data, improper input validation, etc.
+* **Authentication and authorization issues:** Weak password policies, missing or inadequate access controls.
+* **Other common vulnerabilities:**  Outdated dependencies, insecure configurations, etc.
+
+For each vulnerability found, please:
+
+* Clearly identify the vulnerability type.
+* Indicate the specific line(s) of code where the vulnerability exists.
+* Mention the filename where the vulnerability is located. 
+* Provide clear and concise recommendations for fixing the vulnerability.
+* Include a relevant internet link for reference.
+* Include a code improvement recommendation that you think this code can be well written with this recommendation with file name and line number 
+
+Please present the vulnerabilities in a Markdown table with the following columns:
+
+| Vulnerability Type | File | Line(s) | Description | Recommendation | Reference | Code Improvement|
+|---|---|---|---|---|---|---|
+
+After the analysis, please provide a summary with the following:
+
+* Total number of vulnerabilities found.
+* Number of high, medium, and low severity vulnerabilities.
+* Overall status: "Pass" if no high severity vulnerabilities are found, "Fail" otherwise.
+* Emojis representing the severity levels (e.g., 🚨 for high, ⚠️ for medium, ℹ️ for low).
+
+Code:
+{code}
+"""
         try:
             review = get_review(model_name="gemini-1.5-pro", review_prompt=review_prompt, code=code)
 
